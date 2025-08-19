@@ -1,0 +1,802 @@
+@import "tailwindcss";
+
+@layer base {
+  .font-eb-garamond {
+    font-family: var(--font-eb-garamond), Georgia, serif;
+  }
+  
+  .font-outfit {
+    font-family: var(--font-outfit), 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+}
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+  --primary-red: #C72B1B;
+  --primary-red-hover: #B02518;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary-red: var(--primary-red);
+  --color-primary-red-hover: var(--primary-red-hover);
+}
+
+/* Navbar Animations */
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInFromLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Navbar Link Hover Effects */
+.nav-link {
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background-color: var(--primary-red);
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.nav-link:hover::after {
+  width: 100%;
+}
+
+.nav-link:hover {
+  color: var(--primary-red);
+  transform: translateY(-1px);
+}
+
+/* Subscribe Button Animations */
+.subscribe-btn {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.subscribe-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s;
+}
+
+.subscribe-btn:hover::before {
+  left: 100%;
+}
+
+.subscribe-btn:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 25px rgba(199, 43, 27, 0.3);
+}
+
+/* Mobile Menu Animations */
+.mobile-menu-enter {
+  animation: slideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Logo Animation */
+.logo-animate {
+  animation: scaleIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Navbar Container Animation */
+.navbar-container {
+  animation: fadeInDown 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Desktop Navigation Animation */
+.desktop-nav {
+  animation: slideInFromLeft 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.2s both;
+}
+
+/* Subscribe Button Animation */
+.subscribe-container {
+  animation: slideInFromRight 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.4s both;
+}
+
+/* Carousel Styles */
+* { box-sizing: border-box; }
+
+/* Scene centered on page */
+.scene {
+  width: 1200px;
+  height: 600px;
+  position: relative;
+  perspective: 1200px;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+
+
+/* 3D container; all transforms applied via JS */
+.carousel {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  transform-style: preserve-3d;
+  transition: transform 900ms cubic-bezier(.22,.61,.36,1);
+  transform: translateY(-60px) rotateX(-16deg) translateZ(-480px);
+}
+
+/* Cards */
+.carousel__cell {
+  position: absolute;
+  width: 380px;
+  height: 240px;
+  /* center the card inside the scene BEFORE ring transforms */
+  left: calc(50% - 190px);
+  top: calc(50% - 120px);
+  border-radius: 16px;
+  background: hsl(0 0% 70%);
+  box-shadow: 0 12px 28px rgba(0,0,0,.12);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  text-align: center;
+  border: 2px solid transparent;
+}
+
+.carousel__cell:hover {
+  box-shadow: 0 20px 40px rgba(0,0,0,.25);
+  background: hsl(0 0% 65%);
+  border: 2px solid rgba(199, 43, 27, 0.1);
+  transform: translateY(-2px);
+}
+
+.carousel__cell.is-front {
+  border: 2px solid transparent;
+  box-shadow: 0 20px 40px rgba(0,0,0,.12);
+}
+
+.carousel__cell.is-front:hover {
+  box-shadow: 0 25px 50px rgba(199, 43, 27, 0.2);
+  background: hsl(0 0% 65%);
+  transform: translateZ(50px) translateY(-60px) scale(1.10) !important;
+  transition-delay: 0.05s;
+  border: 2px solid rgba(199, 43, 27, 0.4);
+}
+
+.carousel__cell.is-front::before {
+  opacity: 1;
+}
+
+.carousel__cell.is-front::after {
+  opacity: 1;
+}
+
+
+
+.carousel__cell::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+@media (min-width: 1280px) {
+  .carousel__cell::before {
+    border-radius: 20px;
+  }
+}
+
+.carousel__cell.is-front::before {
+  opacity: 1;
+}
+
+/* Play button overlay */
+.carousel__cell::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 0;
+  height: 0;
+  border-left: 20px solid rgba(255, 255, 255, 0.9);
+  border-top: 12px solid transparent;
+  border-bottom: 12px solid transparent;
+  opacity: 0;
+  transition: all 0.3s ease;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+}
+
+.carousel__cell.is-front::after {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1.1);
+}
+
+/* Darker shadow for non-front cells */
+.carousel__cell:not(.is-front) {
+  box-shadow: 0 8px 20px rgba(0,0,0,.25);
+  filter: brightness(0.85);
+}
+
+.carousel__cell:not(.is-front):hover {
+  box-shadow: 0 12px 24px rgba(0,0,0,.3);
+  filter: brightness(0.9);
+}
+
+/* Cell container and text styling */
+.cell-container {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 380px;
+  height: 380px; /* Increased height to accommodate text further below */
+  left: calc(50% - 190px);
+  top: calc(50% - 250px); /* Moved up by increasing the offset */
+}
+
+.cell-text {
+  position: absolute;
+  bottom: -40px; /* Negative value pushes text down below the container */
+  left: 0;
+  right: 0;
+  text-align: center;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.cell-text.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.cell-text .episode-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 8px 0;
+  line-height: 1.2;
+}
+
+.cell-text .learn-more-btn {
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #C72B1B;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  border-radius: 0;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.cell-text .learn-more-btn::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background-color: #C72B1B;
+  transition: width 0.2s ease;
+}
+
+.cell-text .learn-more-btn:hover::after {
+  width: 100%;
+}
+
+.cell-text .learn-more-btn:hover {
+  transform: scale(1.02);
+}
+
+/* Large screens */
+@media (min-width: 1280px) {
+  .carousel__cell {
+    width: 380px;
+    height: 240px;
+    left: calc(50% - 190px);
+    top: calc(50% - 120px);
+    padding: 24px;
+  }
+  
+  .carousel__cell::after {
+    border-left: 24px solid rgba(255, 255, 255, 0.9);
+    border-top: 14px solid transparent;
+    border-bottom: 14px solid transparent;
+  }
+  
+  .episode-title {
+    font-size: 24px;
+  }
+  
+  .learn-more-btn {
+    padding: 12px 24px;
+    font-size: 16px;
+  }
+}
+
+/* Mobile responsive styles */
+@media (max-width: 768px) {
+  .cell-container {
+    width: 340px;
+    height: 340px;
+    left: calc(50% - 170px);
+    top: calc(50% - 200px); /* Move carousel down for mobile */
+  }
+  
+  .carousel__cell {
+    width: 340px;
+    height: 200px;
+    left: calc(50% - 170px);
+    top: calc(50% - 100px);
+  }
+  
+  .cell-text {
+    bottom: 10px; /* Closer to cards on mobile */
+  }
+  
+  .cell-text .episode-title {
+    font-size: 16px;
+    margin: 0 0 8px 0;
+  }
+  
+  .cell-text .learn-more-btn {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+  
+  /* Move chevrons down and adjust spacing */
+  .nav-arrow {
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  
+  .nav-arrow-left {
+    left: -80px;
+  }
+  
+  .nav-arrow-right {
+    right: -80px;
+  }
+}
+
+/* Small mobile screens */
+@media (max-width: 480px) {
+  .cell-container {
+    width: 300px;
+    height: 300px;
+    left: calc(50% - 150px);
+    top: calc(50% - 140px); /* Move carousel down more for small mobile */
+  }
+  
+  .carousel__cell {
+    width: 300px;
+    height: 180px;
+    left: calc(50% - 150px);
+    top: calc(50% - 90px);
+  }
+  
+  .cell-text {
+    bottom: 20px; /* Even closer to cards on small mobile */
+  }
+  
+  .cell-text .episode-title {
+    font-size: 17px;
+    margin: 0 0 6px 0;
+  }
+  
+  .cell-text .learn-more-btn {
+    padding: 4px 8px;
+    font-size: 10px;
+  }
+  
+  /* Adjust chevrons for small mobile */
+  .nav-arrow {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .nav-arrow-left {
+    left: -60px;
+  }
+  
+  .nav-arrow-right {
+    right: -60px;
+  }
+}
+
+/* Solid grayscale palette */
+.carousel__cell:nth-child(9n+1) { background: hsl(0 0% 78%); }
+.carousel__cell:nth-child(9n+2) { background: hsl(0 0% 72%); }
+.carousel__cell:nth-child(9n+3) { background: hsl(0 0% 66%); }
+.carousel__cell:nth-child(9n+4) { background: hsl(0 0% 60%); }
+.carousel__cell:nth-child(9n+5) { background: hsl(0 0% 54%); }
+.carousel__cell:nth-child(9n+6) { background: hsl(0 0% 48%); }
+.carousel__cell:nth-child(9n+7) { background: hsl(0 0% 42%); }
+.carousel__cell:nth-child(9n+8) { background: hsl(0 0% 36%); }
+.carousel__cell:nth-child(9n+0) { background: hsl(0 0% 30%); }
+
+/* Optional: emphasize the front-facing card */
+.carousel__cell.is-front {
+  box-shadow: 0 18px 40px rgba(0,0,0,.22);
+  outline: 2px solid #e6e6e6;
+}
+
+/* Legacy episode info (keeping for compatibility) */
+.episode-info {
+  text-align: center;
+  margin-top: 16px;
+}
+
+/* Carousel wrapper */
+.carousel-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 10px;
+  margin-bottom: 40px;
+}
+
+/* Mobile carousel centering */
+@media (max-width: 480px) {
+  .carousel-wrapper {
+    margin-top: 40px;
+    margin-bottom: 20px;
+    padding: 0 20px;
+  }
+  
+  .carousel-section {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+}
+
+/* Carousel section */
+.carousel-section {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Episode info section */
+.episode-info-section {
+  text-align: center;
+  margin-top: 20px;
+  min-height: 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Navigation arrows */
+.nav-arrow {
+  position: absolute;
+  top: 30%;
+  transform: translateY(-50%);
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 1px solid #ccc;
+  background: white;
+  color: #333;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.nav-arrow:hover {
+  background: #f5f5f5;
+  border-color: #999;
+}
+
+.nav-arrow-left {
+  left: -100px;
+}
+
+.nav-arrow-right {
+  right: -100px;
+}
+
+/* Responsive design */
+@media (max-width: 1024px) {
+  .scene {
+    width: 100%;
+    max-width: 900px;
+    height: 450px;
+  }
+  
+  .carousel__cell {
+    width: 280px;
+    height: 180px;
+    left: calc(50% - 140px);
+    top: calc(50% - 90px);
+  }
+  
+  .carousel {
+    transform: translateY(-60px) rotateX(-16deg) translateZ(-480px);
+  }
+  
+  .nav-arrow-left {
+    left: -70px;
+  }
+  
+  .nav-arrow-right {
+    right: -70px;
+  }
+  
+  .carousel__cell::after {
+    border-left: 18px solid rgba(255, 255, 255, 0.9);
+    border-top: 11px solid transparent;
+    border-bottom: 11px solid transparent;
+  }
+}
+
+/* Large screens */
+@media (min-width: 1280px) {
+  .nav-arrow-left {
+    left: -120px;
+  }
+  
+  .nav-arrow-right {
+    right: -120px;
+  }
+}
+
+@media (max-width: 768px) {
+  .scene {
+    width: 100%;
+    max-width: 600px;
+    height: 350px;
+  }
+  
+  .carousel__cell {
+    width: 200px;
+    height: 140px;
+    left: calc(50% - 100px);
+    top: calc(50% - 70px);
+  }
+  
+  .carousel {
+    transform: translateY(-60px) rotateX(-16deg) translateZ(-400px);
+  }
+  
+  @media (max-width: 480px) {
+    .carousel {
+      transform: translateY(-60px) rotateX(-16deg) translateZ(-240px);
+    }
+  }
+  
+  .episode-title {
+    font-size: 18px;
+  }
+  
+  .learn-more-btn {
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+  
+  .nav-arrow {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .nav-arrow-left {
+    left: -55px;
+  }
+  
+  .nav-arrow-right {
+    right: -55px;
+  }
+  
+  /* Mobile chevron positioning */
+  @media (max-width: 480px) {
+    .nav-arrow {
+      top: auto;
+      bottom: -1px;
+      transform: none;
+    }
+    
+    .nav-arrow-left {
+      left: 20px;
+    }
+    
+    .nav-arrow-right {
+      right: 20px;
+    }
+  }
+  
+  .carousel__cell::after {
+    border-left: 16px solid rgba(255, 255, 255, 0.9);
+    border-top: 10px solid transparent;
+    border-bottom: 10px solid transparent;
+  }
+}
+
+/* Small mobile screens */
+@media (max-width: 480px) {
+  .scene {
+    width: 100%;
+    max-width: 350px;
+    height: 280px;
+    margin: 0 auto;
+  }
+  
+  .carousel__cell {
+    width: 160px;
+    height: 100px;
+    left: calc(50% - 80px);
+    top: calc(50% - 50px);
+  }
+  
+  .carousel {
+    transform: translateY(-60px) rotateX(-16deg) translateZ(-320px);
+  }
+  
+  .episode-title {
+    font-size: 16px;
+  }
+  
+  .learn-more-btn {
+    padding: 0;
+    font-size: 12px;
+  }
+  
+  .nav-arrow {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .nav-arrow-left {
+    left: -45px;
+  }
+  
+  .nav-arrow-right {
+    right: -45px;
+  }
+  
+  .carousel-wrapper {
+    margin-top: 40px;
+    margin-bottom: 20px;
+  }
+  
+  .episode-info-section {
+    margin-top: 15px;
+    min-height: 60px;
+  }
+  
+  .carousel__cell::after {
+    border-left: 14px solid rgba(255, 255, 255, 0.9);
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+  }
+  
+  .carousel {
+    transform: translateY(-60px) rotateX(-16deg) translateZ(-200px);
+  }
+}
+
+/* Large screens */
+@media (min-width: 1280px) {
+  .scene {
+    width: 1600px;
+    height: 800px;
+  }
+  
+  .carousel {
+    transform: translateY(-80px) rotateX(-16deg) translateZ(-800px);
+  }
+  
+  .carousel__cell {
+    width: 480px;
+    height: 300px;
+    left: calc(50% - 240px);
+    top: calc(50% - 150px);
+    padding: 32px;
+    border-radius: 20px;
+  }
+  
+  .cell-container {
+    width: 480px;
+    height: 480px;
+    left: calc(50% - 240px);
+    top: calc(50% - 320px);
+  }
+  
+  .cell-text .episode-title {
+    font-size: 32px;
+    margin: 0 0 12px 0;
+  }
+  
+  .cell-text .learn-more-btn {
+    font-size: 14px;
+    background: transparent;
+    color: #C72B1B;
+    padding: 0;
+    border-radius: 0;
+  }
+  
+  .cell-text .learn-more-btn:hover {
+    transform: scale(1.02);
+  }
+}
