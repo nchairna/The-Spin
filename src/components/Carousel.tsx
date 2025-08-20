@@ -229,7 +229,7 @@ export default function Carousel({ episodes }: CarouselProps) {
                 />
                 <div className={`cell-text ${isTextVisible ? 'visible' : ''}`}>
                   <h2 className="episode-title font-outfit">{episode.title}</h2>
-                  <button className="learn-more-btn font-outfit">Watch Now</button>
+                  <button className="learn-more-btn font-outfit">Listen Now</button>
                 </div>
               </div>
             ))}

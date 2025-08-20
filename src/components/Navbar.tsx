@@ -2,7 +2,11 @@
 
 import { useState } from 'react';
 
-export default function Navbar() {
+interface NavbarProps {
+  currentPage?: string;
+}
+
+export default function Navbar({ currentPage = 'home' }: NavbarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const toggleMenu = () => {
@@ -17,22 +21,45 @@ export default function Navbar() {
           <div className="hidden lg:flex items-center justify-between w-full">
             {/* Logo - Left */}
             <div className="flex items-center logo-animate">
-              <img 
-                src="/assets/The Spin Logo.png" 
-                alt="The Spin Podcast Logo" 
-                className="h-28 w-auto"
-              />
+              <a href="/">
+                <img 
+                  src="/assets/The Spin Logo.png" 
+                  alt="The Spin Podcast Logo" 
+                  className="h-28 w-auto"
+                />
+              </a>
             </div>
             
             {/* Navigation Links - Center */}
             <div className="flex items-center space-x-12 desktop-nav">
-              <a href="#" className="nav-link text-gray-900 font-outfit text-base font-medium tracking-wide">
+              <a 
+                href="/" 
+                className={`nav-link font-outfit text-base font-medium tracking-wide transition-colors duration-200 ${
+                  currentPage === 'home' 
+                    ? 'text-[#C72B1B]' 
+                    : 'text-gray-900 hover:text-[#C72B1B]'
+                }`}
+              >
+                Home
+              </a>
+              <a 
+                href="/about" 
+                className={`nav-link font-outfit text-base font-medium tracking-wide transition-colors duration-200 ${
+                  currentPage === 'about' 
+                    ? 'text-[#C72B1B]' 
+                    : 'text-gray-900 hover:text-[#C72B1B]'
+                }`}
+              >
                 About Us
               </a>
-              <a href="#" className="nav-link text-gray-900 font-outfit text-base font-medium tracking-wide">
-                Your Host
-              </a>
-              <a href="#" className="nav-link text-gray-900 font-outfit text-base font-medium tracking-wide">
+              <a 
+                href="/contact" 
+                className={`nav-link font-outfit text-base font-medium tracking-wide transition-colors duration-200 ${
+                  currentPage === 'contact' 
+                    ? 'text-[#C72B1B]' 
+                    : 'text-gray-900 hover:text-[#C72B1B]'
+                }`}
+              >
                 Contact Us
               </a>
             </div>
@@ -71,11 +98,13 @@ export default function Navbar() {
 
             {/* Logo - Center */}
             <div className="flex items-center justify-center flex-1 logo-animate">
-              <img 
-                src="/assets/The Spin Logo.png" 
-                alt="The Spin Podcast Logo" 
-                className="h-28 w-auto"
-              />
+              <a href="/">
+                <img 
+                  src="/assets/The Spin Logo.png" 
+                  alt="The Spin Podcast Logo" 
+                  className="h-28 w-auto"
+                />
+              </a>
             </div>
 
             {/* Empty div for balance - Right */}
@@ -86,13 +115,34 @@ export default function Navbar() {
         {/* Mobile menu */}
         <div className={`lg:hidden ${isMenuOpen ? 'block mobile-menu-enter' : 'hidden'}`}>
           <div className="px-2 pt-2 pb-3 space-y-1 bg-white border-t border-gray-200">
-            <a href="#" className="nav-link block px-3 py-3 text-gray-900 hover:text-[#C72B1B] hover:bg-gray-50 rounded-md transition-all duration-200 font-outfit text-base font-medium">
+            <a 
+              href="/" 
+              className={`nav-link block px-3 py-3 rounded-md transition-all duration-200 font-outfit text-base font-medium ${
+                currentPage === 'home' 
+                  ? 'text-[#C72B1B] bg-gray-50' 
+                  : 'text-gray-900 hover:text-[#C72B1B] hover:bg-gray-50'
+              }`}
+            >
+              Home
+            </a>
+            <a 
+              href="/about" 
+              className={`nav-link block px-3 py-3 rounded-md transition-all duration-200 font-outfit text-base font-medium ${
+                currentPage === 'about' 
+                  ? 'text-[#C72B1B] bg-gray-50' 
+                  : 'text-gray-900 hover:text-[#C72B1B] hover:bg-gray-50'
+              }`}
+            >
               About Us
             </a>
-            <a href="#" className="nav-link block px-3 py-3 text-gray-900 hover:text-[#C72B1B] hover:bg-gray-50 rounded-md transition-all duration-200 font-outfit text-base font-medium">
-              Your Host
-            </a>
-            <a href="#" className="nav-link block px-3 py-3 text-gray-900 hover:text-[#C72B1B] hover:bg-gray-50 rounded-md transition-all duration-200 font-outfit text-base font-medium">
+            <a 
+              href="/contact" 
+              className={`nav-link block px-3 py-3 rounded-md transition-all duration-200 font-outfit text-base font-medium ${
+                currentPage === 'contact' 
+                  ? 'text-[#C72B1B] bg-gray-50' 
+                  : 'text-gray-900 hover:text-[#C72B1B] hover:bg-gray-50'
+              }`}
+            >
               Contact Us
             </a>
             <a 

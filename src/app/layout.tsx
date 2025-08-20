@@ -4,7 +4,7 @@ import { Outfit } from 'next/font/google';
 import "./globals.css";
 
 const ebGaramond = localFont({
-  src: '../../public/fonts/EBGaramond12-Regular.ttf',
+  src: '../../public/fonts/EBGaramond08-Regular.otf',
   variable: '--font-eb-garamond',
   display: 'swap',
 });

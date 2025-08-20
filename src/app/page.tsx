@@ -18,7 +18,7 @@ export default function Home() {
   return (
     <div className="h-screen bg-white overflow-hidden">
       {/* Navigation Bar */}
-      <Navbar />
+      <Navbar currentPage="home" />
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col items-center justify-center py-8 sm:py-16 px-4 overflow-hidden">
