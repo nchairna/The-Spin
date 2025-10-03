@@ -186,7 +186,7 @@ export default function Carousel({ episodes }: CarouselProps) {
     const rotation = scrollY * rotationSpeed;
     
     setScrollRotation(rotation);
-  }, [layoutRing]);
+  }, []);
 
   // Throttled scroll handler for better performance
   const throttledScrollHandler = useCallback(() => {
@@ -262,7 +262,7 @@ export default function Carousel({ episodes }: CarouselProps) {
         clearTimeout(resizeTimeout);
       }
     };
-  }, [resizeTimeout]);
+  }, [resizeTimeout, layoutRing]);
 
   return (
     <div className="carousel-wrapper" ref={carouselRef}>

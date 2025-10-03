@@ -15,28 +15,7 @@ const nextConfig: NextConfig = {
     // optimizeCss: true, // Disabled for static export compatibility
   },
   
-  // Security headers
-  async headers() {
-    return [
-      {
-        source: '/(.*)',
-        headers: [
-          {
-            key: 'X-Frame-Options',
-            value: 'DENY',
-          },
-          {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff',
-          },
-          {
-            key: 'Referrer-Policy',
-            value: 'origin-when-cross-origin',
-          },
-        ],
-      },
-    ];
-  },
+  // Security headers are handled in vercel.json for static export
 };
 
 export default nextConfig;
