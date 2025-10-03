@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 
 interface CarouselProps {
   episodes: Array<{
@@ -17,6 +17,8 @@ export default function Carousel({ episodes }: CarouselProps) {
   const [currentX, setCurrentX] = useState(0);
   const [resizeTimeout, setResizeTimeout] = useState<NodeJS.Timeout | null>(null);
   const [isTextVisible, setIsTextVisible] = useState(false);
+  const [scrollRotation, setScrollRotation] = useState(0);
+  const carouselRef = useRef<HTMLDivElement>(null);
   const cellCount = episodes.length;
 
   // Ring geometry - responsive radius based on screen size
@@ -35,8 +37,53 @@ export default function Carousel({ episodes }: CarouselProps) {
   const tiltDeg = -16;   // NEGATIVE = view from TOP, positive = from below
   const liftY = -60;   // lift the ring a bit upward (adjusted for bigger scene)
 
+  // Rotate the ring so the next/prev card comes to the front
+  const updateRotation = useCallback(() => {
+    const theta = 360 / cellCount;
+    const angle = -selectedIndex * theta;
+    // Combine manual rotation with scroll-based rotation
+    const totalRotation = angle + scrollRotation;
+    const carousel = document.querySelector('.carousel') as HTMLElement;
+    
+    if (carousel) {
+      carousel.style.transform = 
+        `translateY(${liftY}px) rotateX(${tiltDeg}deg) translateZ(-${radius}px) rotateY(${totalRotation}deg)`;
+    }
+
+    // Update front-facing card based on total rotation (selectedIndex + scrollRotation)
+    const cells = document.querySelectorAll('.carousel__cell');
+    cells.forEach(c => c.classList.remove('is-front'));
+    
+    // Find the card that's closest to 0 degrees (front position)
+    let closestIndex = 0;
+    let minAngle = Infinity;
+    
+    episodes.forEach((_, i) => {
+      const cardAngle = (theta * i + totalRotation) % 360;
+      // Normalize angle to -180 to 180 range
+      const normalizedAngle = ((cardAngle + 180) % 360) - 180;
+      const absAngle = Math.abs(normalizedAngle);
+      
+      if (absAngle < minAngle) {
+        minAngle = absAngle;
+        closestIndex = i;
+      }
+    });
+    
+    const frontCell = document.querySelector(`[data-cell="${closestIndex}"]`);
+    if (frontCell) {
+      frontCell.classList.add('is-front');
+    }
+
+    // Always show episode info - no fade animation
+    const episodeInfo = document.querySelector('.carousel-episode-info') as HTMLElement;
+    if (episodeInfo) {
+      episodeInfo.classList.add('visible');
+    }
+  }, [selectedIndex, cellCount, scrollRotation, liftY, tiltDeg, radius, episodes]);
+
   // Position each cell around the ring
-  const layoutRing = () => {
+  const layoutRing = useCallback(() => {
     const theta = 360 / cellCount;
     episodes.forEach((_, i) => {
       const angle = theta * i;
@@ -49,34 +96,7 @@ export default function Carousel({ episodes }: CarouselProps) {
       }
     });
     updateRotation();
-  };
-
-  // Rotate the ring so the next/prev card comes to the front
-  const updateRotation = () => {
-    const theta = 360 / cellCount;
-    const angle = -selectedIndex * theta;
-    const carousel = document.querySelector('.carousel') as HTMLElement;
-    
-    if (carousel) {
-      carousel.style.transform = 
-        `translateY(${liftY}px) rotateX(${tiltDeg}deg) translateZ(-${radius}px) rotateY(${angle}deg)`;
-    }
-
-    // Update front-facing card
-    const cells = document.querySelectorAll('.carousel__cell');
-    cells.forEach(c => c.classList.remove('is-front'));
-    const front = ((selectedIndex % cellCount) + cellCount) % cellCount;
-    const frontCell = document.querySelector(`[data-cell="${front}"]`);
-    if (frontCell) {
-      frontCell.classList.add('is-front');
-    }
-
-    // Always show episode info - no fade animation
-    const episodeInfo = document.querySelector('.carousel-episode-info') as HTMLElement;
-    if (episodeInfo) {
-      episodeInfo.classList.add('visible');
-    }
-  };
+  }, [cellCount, radius, updateRotation, episodes]);
 
   const goToPrevious = () => {
     setSelectedIndex(prev => prev - 1);
@@ -155,15 +175,63 @@ export default function Carousel({ episodes }: CarouselProps) {
     setIsDragging(false);
   };
 
+  // Scroll-based rotation handler - based on total page scroll
+  const handleScroll = useCallback(() => {
+    // Get total page scroll position
+    const scrollY = window.scrollY;
+    
+    // Calculate rotation based on scroll position
+    // Adjust this multiplier to control how fast the carousel spins
+    const rotationSpeed = 0.5; // Degrees per pixel scrolled
+    const rotation = scrollY * rotationSpeed;
+    
+    setScrollRotation(rotation);
+  }, [layoutRing]);
+
+  // Throttled scroll handler for better performance
+  const throttledScrollHandler = useCallback(() => {
+    let ticking = false;
+    
+    return () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          handleScroll();
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+  }, [handleScroll]);
+
   useEffect(() => {
     layoutRing();
+    
+    
     // Show text after carousel layout is complete
-    const timer = setTimeout(() => {
+    const textTimer = setTimeout(() => {
       setIsTextVisible(true);
     }, 800);
     
-    return () => clearTimeout(timer);
-  }, [selectedIndex, cellCount]);
+    return () => {
+      clearTimeout(textTimer);
+    };
+  }, [selectedIndex, cellCount, layoutRing]);
+
+  // Add scroll event listener
+  useEffect(() => {
+    const scrollHandler = throttledScrollHandler();
+    
+    window.addEventListener('scroll', scrollHandler, { passive: true });
+    
+    return () => {
+      window.removeEventListener('scroll', scrollHandler);
+    };
+  }, [throttledScrollHandler, updateRotation]);
+
+  // Update rotation when scroll rotation changes
+  useEffect(() => {
+    updateRotation();
+  }, [scrollRotation, selectedIndex, cellCount, radius, updateRotation]);
 
   // Update radius on window resize with debouncing
   useEffect(() => {
@@ -197,7 +265,8 @@ export default function Carousel({ episodes }: CarouselProps) {
   }, [resizeTimeout]);
 
   return (
-    <div className="carousel-wrapper">
+    <div className="carousel-wrapper" ref={carouselRef}>
+
       {/* Carousel Section */}
       <div className="carousel-section">
         <div 
@@ -228,8 +297,7 @@ export default function Carousel({ episodes }: CarouselProps) {
                   }}
                 />
                 <div className={`cell-text ${isTextVisible ? 'visible' : ''}`}>
-                  <h2 className="episode-title font-outfit">{episode.title}</h2>
-                  <button className="learn-more-btn font-outfit">Listen Now</button>
+                  <h2 className="episode-title font-eb-garamond">{episode.title}</h2>
                 </div>
               </div>
             ))}

@@ -5,8 +5,33 @@
     font-family: var(--font-eb-garamond), Georgia, serif;
   }
   
+  .font-eb-garamond-alt {
+    font-family: var(--font-eb-garamond-alt), Georgia, serif;
+  }
+  
+  .font-eb-garamond-italic {
+    font-family: var(--font-eb-garamond-italic), Georgia, serif;
+  }
+  
+  .font-paradoese {
+    font-family: var(--font-paradoese), Georgia, serif;
+  }
+  
   .font-outfit {
     font-family: var(--font-outfit), 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+  
+  .font-poppins {
+    font-family: var(--font-poppins), 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+  
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
   }
 }
 
@@ -98,8 +123,70 @@
 /* Subscribe Button Animations */
 .subscribe-btn {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  overflow: hidden;
+}
+
+/* Scroll Indicator Animations */
+@keyframes flicker {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+@keyframes bounce-slow {
+  0%, 20%, 53%, 80%, 100% {
+    transform: translate3d(0, 0, 0);
+  }
+  40%, 43% {
+    transform: translate3d(0, -8px, 0);
+  }
+  70% {
+    transform: translate3d(0, -4px, 0);
+  }
+  90% {
+    transform: translate3d(0, -2px, 0);
+  }
+}
+
+@keyframes scroll-left {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes scroll-right {
+  0% {
+    transform: translateX(-50%);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+.scroll-indicator-flicker {
+  animation: flicker 2s ease-in-out infinite;
+}
+
+.scroll-indicator-bounce {
+  animation: bounce-slow 2s infinite;
+}
+
+.animate-scroll-left {
+  animation: scroll-left 30s linear infinite;
+}
+
+.animate-scroll-right {
+  animation: scroll-right 30s linear infinite;
+}
+
+.animate-scroll-left.pause,
+.animate-scroll-right.pause {
+  animation-play-state: paused;
 }
 
 .subscribe-btn::before {
@@ -221,7 +308,6 @@
   /* center the card inside the scene BEFORE ring transforms */
   left: calc(50% - 190px);
   top: calc(50% - 120px);
-  border-radius: 16px;
   background: hsl(0 0% 70%);
   box-shadow: 0 12px 28px rgba(0,0,0,.12);
   cursor: pointer;
@@ -246,14 +332,43 @@
 .carousel__cell.is-front {
   border: 2px solid transparent;
   box-shadow: 0 20px 40px rgba(0,0,0,.12);
+  /* Apply hover effect by default for front-facing card */
+  background: hsl(0 0% 65%);
+  transform: translateZ(50px) translateY(-60px) scale(1.10) !important;
+  transition-delay: 0.05s;
+}
+
+/* Mobile-specific front card adjustments */
+@media (max-width: 768px) {
+  .carousel__cell.is-front {
+    transform: translateZ(40px) translateY(-40px) scale(1.08) !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .carousel__cell.is-front {
+    transform: translateZ(30px) translateY(-30px) scale(1.06) !important;
+  }
 }
 
 .carousel__cell.is-front:hover {
   box-shadow: 0 25px 50px rgba(199, 43, 27, 0.2);
-  background: hsl(0 0% 65%);
-  transform: translateZ(50px) translateY(-60px) scale(1.10) !important;
+  background: hsl(0 0% 70%);
+  transform: translateZ(60px) translateY(-70px) scale(1.15) !important;
   transition-delay: 0.05s;
-  border: 2px solid rgba(199, 43, 27, 0.4);
+}
+
+/* Mobile-specific hover adjustments */
+@media (max-width: 768px) {
+  .carousel__cell.is-front:hover {
+    transform: translateZ(50px) translateY(-50px) scale(1.12) !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .carousel__cell.is-front:hover {
+    transform: translateZ(40px) translateY(-40px) scale(1.10) !important;
+  }
 }
 
 .carousel__cell.is-front::before {
@@ -273,7 +388,6 @@
   left: 0;
   right: 0;
   bottom: 0;
-  border-radius: 16px;
   background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
   opacity: 0;
   transition: opacity 0.3s ease;
@@ -281,8 +395,25 @@
 }
 
 @media (min-width: 1280px) {
+  .scene {
+    width: 720px; /* 1200px * 0.6 = 720px (40% smaller) */
+    height: 360px; /* 600px * 0.6 = 360px (40% smaller) */
+    perspective: 720px; /* Match the new width */
+  }
+  
+  .carousel {
+    transform: translateY(-36px) rotateX(-16deg) translateZ(-288px); /* Adjusted for smaller scene */
+  }
+  
+  .carousel__cell {
+    width: 228px; /* 380px * 0.6 = 228px (40% smaller) */
+    height: 144px; /* 240px * 0.6 = 144px (40% smaller) */
+    left: calc(50% - 114px); /* 114px = 228px / 2 */
+    top: calc(50% - 72px); /* 72px = 144px / 2 */
+  }
+  
   .carousel__cell::before {
-    border-radius: 20px;
+    
   }
 }
 
@@ -337,7 +468,7 @@
 
 .cell-text {
   position: absolute;
-  bottom: -40px; /* Negative value pushes text down below the container */
+  bottom: -20px; /* Closer to the card */
   left: 0;
   right: 0;
   text-align: center;
@@ -352,11 +483,19 @@
 }
 
 .cell-text .episode-title {
-  font-size: 24px;
-  font-weight: 600;
+  font-size: 20px;
+  font-weight: 400;
   color: #333;
   margin: 0 0 8px 0;
   line-height: 1.2;
+}
+
+/* Front-facing card title is bigger */
+.cell-text.is-front .episode-title {
+  font-size: 24px;
+  font-weight: 500;
+  color: #222;
+  transform: scale(1.1);
 }
 
 .cell-text .learn-more-btn {
@@ -409,7 +548,15 @@
   }
   
   .episode-title {
-    font-size: 24px;
+    font-size: 32px;
+  }
+  
+  /* Front-facing card title for large screens */
+  .cell-text.is-front .episode-title {
+    font-size: 38px;
+    font-weight: 500;
+    color: #222;
+    transform: scale(1.15);
   }
   
   .learn-more-btn {
@@ -435,7 +582,7 @@
   }
   
   .cell-text {
-    bottom: 10px; /* Closer to cards on mobile */
+    bottom: -5px; /* Much closer to cards on mobile */
   }
   
   .cell-text .episode-title {
@@ -480,7 +627,7 @@
   }
   
   .cell-text {
-    bottom: 20px; /* Even closer to cards on small mobile */
+    bottom: 60px; /* Much closer to cards on small mobile */
   }
   
   .cell-text .episode-title {
@@ -537,7 +684,7 @@
   flex-direction: column;
   align-items: center;
   margin-top: 10px;
-  margin-bottom: 40px;
+  margin-bottom: 0px;
 }
 
 /* Mobile carousel centering */
@@ -801,7 +948,6 @@
     left: calc(50% - 240px);
     top: calc(50% - 150px);
     padding: 32px;
-    border-radius: 20px;
   }
   
   .cell-container {
@@ -827,4 +973,90 @@
   .cell-text .learn-more-btn:hover {
     transform: scale(1.02);
   }
+}
+
+/* 3D Text Cylinder Styles */
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.transform-style-preserve-3d {
+  transform-style: preserve-3d;
+}
+
+.transform-gpu {
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* Spinning Keywords Animation */
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes counter-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(-360deg);
+  }
+}
+
+/* Tornado Spiral Animation */
+@keyframes tornado-spin {
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+  25% {
+    transform: rotate(90deg) scale(0.8);
+  }
+  50% {
+    transform: rotate(180deg) scale(0.6);
+  }
+  75% {
+    transform: rotate(270deg) scale(0.8);
+  }
+  100% {
+    transform: rotate(360deg) scale(1);
+  }
+}
+
+@keyframes counter-tornado {
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+  25% {
+    transform: rotate(-90deg) scale(1.25);
+  }
+  50% {
+    transform: rotate(-180deg) scale(1.67);
+  }
+  75% {
+    transform: rotate(-270deg) scale(1.25);
+  }
+  100% {
+    transform: rotate(-360deg) scale(1);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 20s linear infinite;
+}
+
+.animate-counter-spin {
+  animation: counter-spin 20s linear infinite;
+}
+
+.animate-tornado-spin {
+  animation: tornado-spin 15s ease-in-out infinite;
+}
+
+.animate-counter-tornado {
+  animation: counter-tornado 15s ease-in-out infinite;
 }

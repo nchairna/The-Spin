@@ -1,162 +1,276 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
 
 interface NavbarProps {
   currentPage?: string;
+  activeSection?: string;
 }
 
-export default function Navbar({ currentPage = 'home' }: NavbarProps) {
+interface NavLinkProps {
+  href: string;
+  isActive: boolean;
+  children: React.ReactNode;
+  isExternal?: boolean;
+}
+
+const NavLink = ({ href, isActive, children, isExternal = false }: NavLinkProps) => {
+  const baseClasses = "font-poppins text-base font-medium tracking-wide transition-colors duration-200";
+  const activeClasses = "text-[#C72B1B]";
+  const inactiveClasses = "text-gray-900 hover:text-[#C72B1B]";
+  
+  const classes = `${baseClasses} ${isActive ? activeClasses : inactiveClasses}`;
+  
+  const handleClick = (e: React.MouseEvent) => {
+    if (!isExternal && href.startsWith('#')) {
+      e.preventDefault();
+      const element = document.querySelector(href);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  };
+  
+  if (isExternal) {
+    return (
+      <a 
+        href={href} 
+        target="_blank" 
+        rel="noopener noreferrer"
+        className={classes}
+      >
+        {children}
+      </a>
+    );
+  }
+  
+  return (
+    <a href={href} className={classes} onClick={handleClick}>
+      {children}
+    </a>
+  );
+};
+
+const MobileNavLink = ({ href, isActive, children, isExternal = false }: NavLinkProps) => {
+  const baseClasses = "block px-3 py-3 rounded-md transition-all duration-200 font-poppins text-base font-medium";
+  const activeClasses = "text-[#C72B1B] bg-gray-50";
+  const inactiveClasses = "text-gray-900 hover:text-[#C72B1B] hover:bg-gray-50";
+  
+  const classes = `${baseClasses} ${isActive ? activeClasses : inactiveClasses}`;
+  
+  const handleClick = (e: React.MouseEvent) => {
+    if (!isExternal && href.startsWith('#')) {
+      e.preventDefault();
+      const element = document.querySelector(href);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  };
+  
+  return (
+    <a 
+      href={href} 
+      className={classes}
+      onClick={handleClick}
+      {...(isExternal && { target: "_blank", rel: "noopener noreferrer" })}
+    >
+      {children}
+    </a>
+  );
+};
+
+const Logo = () => (
+  <Link href="/" className="flex items-center justify-center logo-animate">
+    <Image 
+      src="/assets/The Spin Logo.png" 
+      alt="The Spin Podcast Logo" 
+      width={48}
+      height={48}
+      className="lg:h-12 h-12 w-auto"
+      priority
+    />
+  </Link>
+);
+
+const HamburgerButton = ({ isOpen, onClick }: { isOpen: boolean; onClick: () => void }) => (
+  <button
+    onClick={onClick}
+    className="text-gray-900 hover:text-[#C72B1B] focus:outline-none focus:text-[#C72B1B] transition-colors duration-200"
+    aria-label="Toggle navigation menu"
+    aria-expanded={isOpen}
+  >
+    <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      {isOpen ? (
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+      ) : (
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+      )}
+    </svg>
+  </button>
+);
+
+export default function Navbar({ currentPage = 'home', activeSection = 'home' }: NavbarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
+  // Add scroll listener to show/hide border
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const isHomePage = currentPage === 'home';
+  const navigationItems = [
+    { href: isHomePage ? '#home-section' : '/#home-section', label: 'Home', page: 'home' },
+    { href: '/episodes', label: 'Episodes', page: 'episodes' },
+    { href: isHomePage ? '#contact-section' : '/#contact-section', label: 'Contact', page: 'contact' },
+    { href: 'https://thespinpodcast.substack.com/', label: 'Blog', page: 'blog', isExternal: true },
+  ];
+
   return (
-    <nav className="bg-white navbar-container">
-      <div className="w-full px-4 py-3 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
-          {/* Desktop Layout */}
-          <div className="hidden lg:flex items-center justify-between w-full">
-            {/* Logo - Left */}
-            <div className="flex items-center logo-animate">
-              <a href="/">
-                <img 
-                  src="/assets/The Spin Logo.png" 
-                  alt="The Spin Podcast Logo" 
-                  className="h-28 w-auto"
-                />
-              </a>
-            </div>
-            
-            {/* Navigation Links - Center */}
-            <div className="flex items-center space-x-12 desktop-nav">
-              <a 
-                href="/" 
-                className={`nav-link font-outfit text-base font-medium tracking-wide transition-colors duration-200 ${
-                  currentPage === 'home' 
-                    ? 'text-[#C72B1B]' 
-                    : 'text-gray-900 hover:text-[#C72B1B]'
-                }`}
-              >
-                Home
-              </a>
-              <a 
-                href="/about" 
-                className={`nav-link font-outfit text-base font-medium tracking-wide transition-colors duration-200 ${
-                  currentPage === 'about' 
-                    ? 'text-[#C72B1B]' 
-                    : 'text-gray-900 hover:text-[#C72B1B]'
-                }`}
-              >
-                About Us
-              </a>
-              <a 
-                href="/contact" 
-                className={`nav-link font-outfit text-base font-medium tracking-wide transition-colors duration-200 ${
-                  currentPage === 'contact' 
-                    ? 'text-[#C72B1B]' 
-                    : 'text-gray-900 hover:text-[#C72B1B]'
-                }`}
-              >
-                Contact Us
-              </a>
-            </div>
-            
-            {/* Subscribe Button - Right */}
-            <div className="flex items-center subscribe-container">
-              <a 
-                href="https://thespinpodcast.substack.com/" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="subscribe-btn bg-[#C72B1B] hover:bg-[#B02518] text-white px-6 py-3 rounded-lg font-semibold shadow-lg font-outfit text-base tracking-wide"
-              >
-                Subscribe
-              </a>
-            </div>
-          </div>
-
-          {/* Mobile Layout */}
-          <div className="lg:hidden flex items-center justify-between w-full">
-            {/* Hamburger Menu Button - Left */}
-            <div className="flex items-center">
-              <button
-                onClick={toggleMenu}
-                className="text-gray-900 hover:text-[#C72B1B] focus:outline-none focus:text-[#C72B1B] transition-colors duration-200"
-                aria-label="Toggle menu"
-              >
-                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  {isMenuOpen ? (
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  ) : (
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                  )}
-                </svg>
-              </button>
-            </div>
-
-            {/* Logo - Center */}
-            <div className="flex items-center justify-center flex-1 logo-animate">
-              <a href="/">
-                <img 
-                  src="/assets/The Spin Logo.png" 
-                  alt="The Spin Podcast Logo" 
-                  className="h-28 w-auto"
-                />
-              </a>
-            </div>
-
-            {/* Empty div for balance - Right */}
-            <div className="w-6"></div>
-          </div>
-        </div>
-
-        {/* Mobile menu */}
-        <div className={`lg:hidden ${isMenuOpen ? 'block mobile-menu-enter' : 'hidden'}`}>
-          <div className="px-2 pt-2 pb-3 space-y-1 bg-white border-t border-gray-200">
-            <a 
-              href="/" 
-              className={`nav-link block px-3 py-3 rounded-md transition-all duration-200 font-outfit text-base font-medium ${
-                currentPage === 'home' 
-                  ? 'text-[#C72B1B] bg-gray-50' 
-                  : 'text-gray-900 hover:text-[#C72B1B] hover:bg-gray-50'
-              }`}
-            >
-              Home
-            </a>
-            <a 
-              href="/about" 
-              className={`nav-link block px-3 py-3 rounded-md transition-all duration-200 font-outfit text-base font-medium ${
-                currentPage === 'about' 
-                  ? 'text-[#C72B1B] bg-gray-50' 
-                  : 'text-gray-900 hover:text-[#C72B1B] hover:bg-gray-50'
-              }`}
-            >
-              About Us
-            </a>
-            <a 
-              href="/contact" 
-              className={`nav-link block px-3 py-3 rounded-md transition-all duration-200 font-outfit text-base font-medium ${
-                currentPage === 'contact' 
-                  ? 'text-[#C72B1B] bg-gray-50' 
-                  : 'text-gray-900 hover:text-[#C72B1B] hover:bg-gray-50'
-              }`}
-            >
-              Contact Us
-            </a>
-            <a 
-              href="https://thespinpodcast.substack.com/" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="subscribe-btn block px-3 py-3 bg-[#C72B1B] text-white hover:bg-[#B02518] rounded-md transition-all duration-200 font-outfit font-semibold text-base"
-            >
-              Subscribe
-            </a>
-          </div>
-        </div>
+    <header className={`bg-white sticky top-0 z-50 transition-all duration-500 ${isScrolled ? 'border-b border-gray-100 shadow-sm' : 'border-b border-transparent'}`}>
+      {/* Fixed Social Media Icons - Top Right of Navbar (Desktop Only) */}
+      <div className="hidden lg:flex absolute top-4 right-4 lg:top-10 lg:right-8 space-x-6 z-10 items-center">
+        {/* YouTube Icon */}
+        <a 
+          href="https://www.youtube.com/channel/UC5P-kAk5xkw2Ek6ZdQ-g2DA" 
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-[#C72B1B] hover:scale-110 transition-transform duration-200"
+          aria-label="YouTube"
+        >
+          <svg className="w-5 h-5 lg:w-6 lg:h-6" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+          </svg>
+        </a>
+        
+        {/* Spotify Icon */}
+        <a 
+          href="#" 
+          className="text-[#C72B1B] hover:scale-110 transition-transform duration-200"
+          aria-label="Spotify"
+        >
+          <svg className="w-5 h-5 lg:w-6 lg:h-6" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.42 1.56-.299.421-1.02.599-1.559.3z"/>
+          </svg>
+        </a>
       </div>
-    </nav>
+
+      <nav className="w-full px-4 py-4 sm:py-6 sm:px-6 lg:px-8 lg:pt-8">
+        <div className="flex flex-col items-center h-12 lg:h-14">
+          {/* Desktop Navigation */}
+          <div className="hidden lg:flex items-center justify-center w-full">
+            {/* Left Navigation Links */}
+            <div className="flex items-center space-x-12 mr-16">
+              <NavLink
+                href={navigationItems[0].href}
+                isActive={activeSection === navigationItems[0].page}
+                isExternal={navigationItems[0].isExternal}
+              >
+                {navigationItems[0].label}
+              </NavLink>
+              <NavLink
+                href={navigationItems[1].href}
+                isActive={activeSection === navigationItems[1].page}
+                isExternal={navigationItems[1].isExternal}
+              >
+                {navigationItems[1].label}
+              </NavLink>
+            </div>
+            
+            {/* Center Logo */}
+            <Logo />
+            
+            {/* Right Navigation Links */}
+            <div className="flex items-center space-x-12 ml-16">
+              <NavLink
+                href={navigationItems[2].href}
+                isActive={activeSection === navigationItems[2].page}
+                isExternal={navigationItems[2].isExternal}
+              >
+                {navigationItems[2].label}
+              </NavLink>
+              <NavLink
+                href={navigationItems[3].href}
+                isActive={activeSection === navigationItems[3].page}
+                isExternal={navigationItems[3].isExternal}
+              >
+                {navigationItems[3].label}
+              </NavLink>
+            </div>
+          </div>
+
+          {/* Mobile Navigation */}
+          <div className="lg:hidden flex items-center w-full relative">
+            {/* Hamburger Menu Button */}
+            <div className="absolute left-0 top-1/2 transform -translate-y-1/2">
+              <HamburgerButton isOpen={isMenuOpen} onClick={toggleMenu} />
+            </div>
+            
+            {/* Mobile Logo */}
+            <div className="flex items-center justify-center w-full">
+              <Logo />
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Menu */}
+        {isMenuOpen && (
+          <div className="lg:hidden mobile-menu-enter">
+            <div className="px-2 pt-2 pb-3 space-y-1 bg-white border-t border-gray-200">
+              {navigationItems.map((item) => (
+                <MobileNavLink
+                  key={item.page}
+                  href={item.href}
+                  isActive={activeSection === item.page}
+                  isExternal={item.isExternal}
+                >
+                  {item.isExternal ? item.label : item.label === 'Home' ? 'Home' : item.label === 'Episodes' ? 'Episodes' : item.label === 'Contact' ? 'Contact Us' : item.label}
+                </MobileNavLink>
+              ))}
+              
+              {/* Mobile Social Media Icons */}
+              <div className="flex items-center justify-center space-x-6 pt-4 border-t border-gray-100">
+                {/* YouTube Icon */}
+                <a 
+                  href="https://www.youtube.com/channel/UC5P-kAk5xkw2Ek6ZdQ-g2DA" 
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[#C72B1B] hover:scale-110 transition-transform duration-200"
+                  aria-label="YouTube"
+                >
+                  <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                  </svg>
+                </a>
+                
+                {/* Spotify Icon */}
+                <a 
+                  href="#" 
+                  className="text-[#C72B1B] hover:scale-110 transition-transform duration-200"
+                  aria-label="Spotify"
+                >
+                  <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.42 1.56-.299.421-1.02.599-1.559.3z"/>
+                  </svg>
+                </a>
+              </div>
+            </div>
+          </div>
+        )}
+      </nav>
+    </header>
   );
 }
 
