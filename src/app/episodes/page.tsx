@@ -15,7 +15,7 @@ export default function EpisodesPage() {
   // Fetch YouTube data
   const { data: youtubeData, loading, error } = useYouTube({ maxResults: 50 });
   
-  const episodes = youtubeData?.videos ?? [];
+  const episodes = useMemo(() => youtubeData?.videos ?? [], [youtubeData]);
 
   const categories = useMemo(() => {
     const categorySet = new Set<string>();
