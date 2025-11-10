@@ -1,133 +1,45 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Image from 'next/image';
 import Navbar from '../../components/Navbar';
-
-interface Episode {
-  id: number;
-  title: string;
-  description: string;
-  category: string;
-  date: string;
-  duration: string;
-  imageUrl?: string;
-  youtubeUrl?: string;
-  spotifyUrl?: string;
-}
-
-// Sample episodes data
-const allEpisodes: Episode[] = [
-  { 
-    id: 1, 
-    title: "The Nava Episode 12", 
-    description: "Exploring the latest trends in technology and their impact on modern business", 
-    category: "Technology",
-    date: "Dec 15, 2024",
-    duration: "45 min"
-  },
-  { 
-    id: 2, 
-    title: "The Future of AI", 
-    description: "How artificial intelligence is shaping our world and what's coming next", 
-    category: "AI",
-    date: "Dec 12, 2024",
-    duration: "52 min"
-  },
-  { 
-    id: 3, 
-    title: "Startup Stories", 
-    description: "Behind the scenes of successful startups and the lessons learned", 
-    category: "Startups",
-    date: "Dec 10, 2024",
-    duration: "38 min"
-  },
-  { 
-    id: 4, 
-    title: "Digital Marketing Mastery", 
-    description: "Modern strategies for online growth and customer acquisition", 
-    category: "Marketing",
-    date: "Dec 8, 2024",
-    duration: "41 min"
-  },
-  { 
-    id: 5, 
-    title: "Remote Work Revolution", 
-    description: "The new normal of distributed teams and remote collaboration", 
-    category: "Business",
-    date: "Dec 5, 2024",
-    duration: "47 min"
-  },
-  { 
-    id: 6, 
-    title: "Blockchain Basics", 
-    description: "Understanding cryptocurrency and blockchain technology", 
-    category: "Technology",
-    date: "Dec 3, 2024",
-    duration: "43 min"
-  },
-  { 
-    id: 7, 
-    title: "Mental Health in Tech", 
-    description: "Wellness in the digital age and maintaining work-life balance", 
-    category: "Wellness",
-    date: "Nov 30, 2024",
-    duration: "39 min"
-  },
-  { 
-    id: 8, 
-    title: "Product Design", 
-    description: "Creating user-centered experiences and design thinking", 
-    category: "Design",
-    date: "Nov 28, 2024",
-    duration: "44 min"
-  },
-  { 
-    id: 9, 
-    title: "Data Science", 
-    description: "Extracting insights from big data and machine learning", 
-    category: "AI",
-    date: "Nov 25, 2024",
-    duration: "48 min"
-  },
-  { 
-    id: 10, 
-    title: "Sustainable Business", 
-    description: "Building environmentally conscious companies", 
-    category: "Business",
-    date: "Nov 22, 2024",
-    duration: "42 min"
-  },
-  { 
-    id: 11, 
-    title: "Creative Writing", 
-    description: "The art of storytelling and narrative craft", 
-    category: "Creative",
-    date: "Nov 20, 2024",
-    duration: "36 min"
-  },
-  { 
-    id: 12, 
-    title: "Social Media Strategy", 
-    description: "Building authentic connections in the digital space", 
-    category: "Marketing",
-    date: "Nov 18, 2024",
-    duration: "40 min"
-  }
-];
-
-const categories = ["All", "Technology", "AI", "Startups", "Marketing", "Business", "Wellness", "Design", "Creative"];
+import { useYouTube } from '@/hooks/useYouTube';
+import { YouTubeVideo } from '@/types/youtube';
 
 export default function EpisodesPage() {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedEpisode, setSelectedEpisode] = useState<Episode | null>(null);
+  const [selectedEpisode, setSelectedEpisode] = useState<YouTubeVideo | null>(null);
+  
+  // Fetch YouTube data
+  const { data: youtubeData, loading, error } = useYouTube({ maxResults: 50 });
+  
+  const episodes = youtubeData?.videos ?? [];
 
-  const filteredEpisodes = allEpisodes.filter(episode => {
+  const categories = useMemo(() => {
+    const categorySet = new Set<string>();
+
+    episodes.forEach((episode) => {
+      if (episode.category) {
+        categorySet.add(episode.category);
+      }
+    });
+
+    return ['All', ...Array.from(categorySet).sort()];
+  }, [episodes]);
+
+  useEffect(() => {
+    if (!categories.includes(selectedCategory)) {
+      setSelectedCategory('All');
+    }
+  }, [categories, selectedCategory]);
+
+  const filteredEpisodes = episodes.filter((episode) => {
     const matchesCategory = selectedCategory === "All" || episode.category === selectedCategory;
-    const matchesSearch = episode.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         episode.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch =
+      episode.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      episode.description.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 
@@ -135,7 +47,7 @@ export default function EpisodesPage() {
     <div className="min-h-screen bg-white">
       <Navbar currentPage="episodes" activeSection="episodes" />
       
-      <main className="px-4 py-16 sm:px-6 lg:px-8">
+      <main className="px-4 py-16 sm:px-6 lg:px-8 pt-32">
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-3xl md:text-5xl lg:text-6xl font-eb-garamond text-gray-900 tracking-wide mb-6">
@@ -199,6 +111,30 @@ export default function EpisodesPage() {
 
         {/* Episodes Grid */}
         <div className="max-w-6xl mx-auto">
+          {loading && (
+            <div className="text-center py-12">
+              <p className="text-gray-500 font-eb-garamond text-lg">
+                Loading the latest episodes...
+              </p>
+            </div>
+          )}
+
+          {error && !loading && (
+            <div className="text-center py-12">
+              <p className="text-red-500 font-eb-garamond text-lg">
+                Unable to load YouTube episodes right now. Showing recent highlights instead.
+              </p>
+            </div>
+          )}
+
+          {!loading && !error && episodes.length === 0 && (
+            <div className="text-center py-12">
+              <p className="text-gray-500 font-eb-garamond text-lg">
+                No episodes available yet. Check back soon!
+              </p>
+            </div>
+          )}
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredEpisodes.map((episode) => (
               <div
@@ -210,9 +146,9 @@ export default function EpisodesPage() {
                 <div className="bg-white shadow-lg overflow-hidden border border-gray-100 hover:shadow-xl hover:scale-105 transition-all duration-300 relative">
                   {/* Episode Thumbnail */}
                   <div className="w-full h-48 bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden">
-                    {episode.imageUrl ? (
+                    {episode.thumbnailUrl ? (
                       <Image
-                        src={episode.imageUrl}
+                        src={episode.thumbnailUrl}
                         alt={episode.title}
                         fill
                         className="object-cover group-hover:scale-105 transition-transform duration-300"
@@ -239,7 +175,7 @@ export default function EpisodesPage() {
                 <div className="mt-4">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-xs font-outfit text-[#C72B1B] bg-red-50 px-2 py-1 rounded-full">
-                      {episode.category}
+                      {episode.category || 'Podcast'}
                     </span>
                     <span className="text-xs font-outfit text-gray-500">
                       {episode.duration}
@@ -252,7 +188,7 @@ export default function EpisodesPage() {
                       {episode.title}
                     </h3>
                     <span className="text-xs font-outfit text-gray-500 whitespace-nowrap">
-                      {episode.date}
+                      {new Date(episode.publishedAt).toLocaleDateString()}
                     </span>
                   </div>
                 </div>
@@ -261,7 +197,7 @@ export default function EpisodesPage() {
           </div>
 
           {/* No Results */}
-          {filteredEpisodes.length === 0 && (
+          {!loading && episodes.length > 0 && filteredEpisodes.length === 0 && (
             <div className="text-center py-12">
               <p className="text-gray-500 font-eb-garamond text-lg">
                 No episodes found matching your criteria.
@@ -280,8 +216,13 @@ export default function EpisodesPage() {
             <div className="bg-white shadow-2xl">
               {/* Large Thumbnail with consistent aspect ratio */}
               <div className="relative w-full pb-[56.25%] bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
-                {selectedEpisode.imageUrl ? (
-                  <Image src={selectedEpisode.imageUrl} alt={selectedEpisode.title} fill className="object-cover" />
+                {selectedEpisode.thumbnailUrl ? (
+                  <Image 
+                    src={selectedEpisode.thumbnailUrl} 
+                    alt={selectedEpisode.title} 
+                    fill 
+                    className="object-cover" 
+                  />
                 ) : (
                   <div className="absolute inset-0 w-full h-full flex items-center justify-center">
                     <Image src="/assets/The spin icon.svg" alt="The Spin Icon" width={64} height={64} className="h-16 w-auto opacity-40" />
@@ -310,15 +251,6 @@ export default function EpisodesPage() {
                   >
                     <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
                     Listen on YouTube
-                  </a>
-                  <a
-                    href={selectedEpisode.spotifyUrl || '#'}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 border border-gray-300 text-gray-800 font-semibold transition-colors duration-200 hover:border-gray-400"
-                  >
-                    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.42 1.56-.299.421-1.02.599-1.559.3z"/></svg>
-                    Listen on Spotify
                   </a>
                 </div>
               </div>

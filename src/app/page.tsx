@@ -6,64 +6,6 @@ import Navbar from '@/components/Navbar';
 import Image from 'next/image';
 import { useState, useEffect, useRef } from 'react';
 
-// Sample podcast episodes data for carousel
-const carouselEpisodes = [
-  { id: 1, title: "Our Trailer", description: "Exploring the latest trends in technology" },
-  { id: 2, title: "Coming Soon", description: "How artificial intelligence is shaping our world" },
-  { id: 3, title: "Coming Soon", description: "Behind the scenes of successful startups" },
-  { id: 4, title: "Coming Soon", description: "Modern strategies for online growth" },
-  { id: 5, title: "Coming Soon", description: "The new normal of distributed teams" },
-  { id: 6, title: "Coming Soon", description: "Understanding cryptocurrency and blockchain" },
-  { id: 7, title: "Coming Soon", description: "Wellness in the digital age" },
-  { id: 8, title: "Coming Soon", description: "Creating user-centered experiences" },
-  { id: 9, title: "Coming Soon", description: "Extracting insights from big data" },
-];
-
-// Sample podcast episodes data for grid
-const gridEpisodes = [
-  { 
-    id: 1, 
-    title: "The Nava Episode 12", 
-    description: "Exploring the latest trends in technology and their impact on modern business", 
-    category: "Technology",
-    date: "Dec 15, 2024",
-    duration: "45 min"
-  },
-  { 
-    id: 2, 
-    title: "The Future of AI", 
-    description: "How artificial intelligence is shaping our world and what's coming next", 
-    category: "AI",
-    date: "Dec 12, 2024",
-    duration: "52 min"
-  },
-  { 
-    id: 3, 
-    title: "Startup Stories", 
-    description: "Behind the scenes of successful startups and the lessons learned", 
-    category: "Startups",
-    date: "Dec 10, 2024",
-    duration: "38 min"
-  },
-  { 
-    id: 4, 
-    title: "Digital Marketing Mastery", 
-    description: "Modern strategies for online growth and customer acquisition", 
-    category: "Marketing",
-    date: "Dec 8, 2024",
-    duration: "41 min"
-  },
-  { 
-    id: 5, 
-    title: "Remote Work Revolution", 
-    description: "The new normal of distributed teams and remote collaboration", 
-    category: "Business",
-    date: "Dec 5, 2024",
-    duration: "47 min"
-  },
-
-];
-
 export default function Home() {
   const [showTitle, setShowTitle] = useState(false);
   const [titleColored, setTitleColored] = useState(false);
@@ -233,12 +175,12 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-white relative">
+    <div className="min-h-screen bg-white relative overflow-x-hidden pt-[80px]">
       {/* Navigation Bar */}
       <Navbar activeSection={activeSection} />
 
       {/* Home Section */}
-      <section ref={homeRef} id="home-section" className="min-h-screen flex flex-col items-center py-1 pt-10 lg:pt-12 px-4">
+      <section ref={homeRef} id="home-section" className="min-h-screen flex flex-col items-center py-1 pt-10 lg:pt-12 px-4 w-full">
         <div className="text-center mb-1 sm:mb-3 px-4">
           <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             {/* New Title */}
@@ -257,10 +199,10 @@ export default function Home() {
         </div>
         
         {/* Carousel */}
-        <Carousel episodes={carouselEpisodes} />
+        <Carousel />
         
         {/* Episodes Grid */}
-        <EpisodesGrid episodes={gridEpisodes} />
+        <EpisodesGrid />
       </section>
 
       {/* About The Spin Section */}

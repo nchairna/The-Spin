@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -16,6 +16,22 @@ interface NavLinkProps {
   isExternal?: boolean;
 }
 
+const scrollWithOffset = (selector: string) => {
+  const element = document.querySelector(selector);
+  if (element) {
+    const header = document.querySelector('header');
+    const headerHeight = header ? header.getBoundingClientRect().height : 0;
+    const additionalOffset = 24;
+    const totalOffset = headerHeight + additionalOffset;
+    const elementPosition = element.getBoundingClientRect().top + window.scrollY;
+    const offsetPosition = elementPosition - totalOffset;
+    window.scrollTo({
+      top: offsetPosition,
+      behavior: 'smooth',
+    });
+  }
+};
+
 const NavLink = ({ href, isActive, children, isExternal = false }: NavLinkProps) => {
   const baseClasses = "font-poppins text-base font-medium tracking-wide transition-colors duration-200";
   const activeClasses = "text-[#C72B1B]";
@@ -26,10 +42,7 @@ const NavLink = ({ href, isActive, children, isExternal = false }: NavLinkProps)
   const handleClick = (e: React.MouseEvent) => {
     if (!isExternal && href.startsWith('#')) {
       e.preventDefault();
-      const element = document.querySelector(href);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
-      }
+      scrollWithOffset(href);
     }
   };
   
@@ -63,10 +76,7 @@ const MobileNavLink = ({ href, isActive, children, isExternal = false }: NavLink
   const handleClick = (e: React.MouseEvent) => {
     if (!isExternal && href.startsWith('#')) {
       e.preventDefault();
-      const element = document.querySelector(href);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
-      }
+      scrollWithOffset(href);
     }
   };
   
@@ -115,20 +125,46 @@ const HamburgerButton = ({ isOpen, onClick }: { isOpen: boolean; onClick: () => 
 export default function Navbar({ currentPage = 'home', activeSection = 'home' }: NavbarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isHidden, setIsHidden] = useState(false);
+  const lastScrollYRef = useRef(0);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
-  // Add scroll listener to show/hide border
+  // Add scroll listener to handle visibility and border
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
+      const currentScrollY = window.scrollY;
+      const lastScrollY = lastScrollYRef.current;
+
+      setIsScrolled(currentScrollY > 10);
+
+      const threshold = 120;
+      const isScrollingDown = currentScrollY > lastScrollY;
+      const isScrollingUp = currentScrollY < lastScrollY;
+
+      if (isMenuOpen) {
+        setIsHidden(false);
+      } else if (isScrollingDown && currentScrollY > threshold) {
+        setIsHidden(true);
+      } else if (isScrollingUp) {
+        setIsHidden(false);
+      }
+
+      lastScrollYRef.current = currentScrollY;
     };
 
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [isMenuOpen]);
+
+  // Ensure navbar is visible when menu state changes
+  useEffect(() => {
+    if (isMenuOpen) {
+      setIsHidden(false);
+    }
+  }, [isMenuOpen]);
 
   const isHomePage = currentPage === 'home';
   const navigationItems = [
@@ -139,7 +175,11 @@ export default function Navbar({ currentPage = 'home', activeSection = 'home' }:
   ];
 
   return (
-    <header className={`bg-white sticky top-0 z-50 transition-all duration-500 ${isScrolled ? 'border-b border-gray-100 shadow-sm' : 'border-b border-transparent'}`}>
+    <header
+      className={`bg-white fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+        isScrolled ? 'border-b border-gray-100 shadow-sm' : 'border-b border-transparent'
+      } ${isHidden ? '-translate-y-full' : 'translate-y-0'}`}
+    >
       {/* Fixed Social Media Icons - Top Right of Navbar (Desktop Only) */}
       <div className="hidden lg:flex absolute top-4 right-4 lg:top-10 lg:right-8 space-x-6 z-10 items-center">
         {/* YouTube Icon */}
@@ -157,7 +197,7 @@ export default function Navbar({ currentPage = 'home', activeSection = 'home' }:
         
         {/* Spotify Icon */}
         <a 
-          href="#" 
+          href="https://open.spotify.com/episode/5fdnAohpE8Yz7rKKm9xcii?si=5a0a3c8a956c4e51" 
           className="text-[#C72B1B] hover:scale-110 transition-transform duration-200"
           aria-label="Spotify"
         >
@@ -257,7 +297,7 @@ export default function Navbar({ currentPage = 'home', activeSection = 'home' }:
                 
                 {/* Spotify Icon */}
                 <a 
-                  href="#" 
+                  href="https://open.spotify.com/episode/5fdnAohpE8Yz7rKKm9xcii?si=5a0a3c8a956c4e51" 
                   className="text-[#C72B1B] hover:scale-110 transition-transform duration-200"
                   aria-label="Spotify"
                 >

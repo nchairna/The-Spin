@@ -1,11 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Enable static optimization
-  output: 'export',
+  // Static optimization - removed for API routes support
+  // output: 'export',
   trailingSlash: true,
   
-  // Image optimization for static export
+  // Image optimization
   images: {
     unoptimized: true,
   },

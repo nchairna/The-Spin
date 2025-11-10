@@ -1,9 +1,11 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import Image from 'next/image';
+import { useYouTube } from '@/hooks/useYouTube';
 
 interface CarouselProps {
-  episodes: Array<{
+  episodes?: Array<{
     id: number;
     title: string;
     description?: string;
@@ -19,7 +21,59 @@ export default function Carousel({ episodes }: CarouselProps) {
   const [isTextVisible, setIsTextVisible] = useState(false);
   const [scrollRotation, setScrollRotation] = useState(0);
   const carouselRef = useRef<HTMLDivElement>(null);
-  const cellCount = episodes.length;
+  
+  // Fetch YouTube data
+  const { data: youtubeData } = useYouTube({ maxResults: 9 });
+  
+  // Use YouTube videos if available, fallback to episodes prop
+  type DisplayEpisode = {
+    id: string;
+    title: string;
+    description?: string;
+    thumbnailUrl?: string;
+    youtubeUrl?: string;
+    isPlaceholder?: boolean;
+  };
+
+  const MAX_CARDS = 9;
+
+  const displayEpisodes = useMemo<DisplayEpisode[]>(() => {
+    const youtubeEpisodes =
+      youtubeData?.videos
+        ?.slice(0, MAX_CARDS)
+        .map((video) => ({
+          id: video.id,
+          title: video.title,
+          description: video.description,
+          thumbnailUrl: video.thumbnailUrl,
+          youtubeUrl: video.youtubeUrl,
+        })) ?? [];
+
+    const providedEpisodes =
+      (episodes ?? [])
+        .slice(0, MAX_CARDS)
+        .map((episode) => ({
+          id: String(episode.id),
+          title: episode.title,
+          description: episode.description,
+        })) ?? [];
+
+    const prioritizedEpisodes =
+      youtubeEpisodes.length > 0 ? youtubeEpisodes : providedEpisodes;
+
+    const placeholdersNeeded = Math.max(MAX_CARDS - prioritizedEpisodes.length, 0);
+
+    const placeholders = Array.from({ length: placeholdersNeeded }, (_, index) => ({
+      id: `placeholder-${index}`,
+      title: 'Coming Soon',
+      description: 'Stay tuned for upcoming episodes.',
+      isPlaceholder: true,
+    }));
+
+    return [...prioritizedEpisodes, ...placeholders];
+  }, [youtubeData?.videos, episodes]);
+
+  const cellCount = displayEpisodes.length;
 
   // Ring geometry - responsive radius based on screen size
   const getRadius = () => {
@@ -58,7 +112,7 @@ export default function Carousel({ episodes }: CarouselProps) {
     let closestIndex = 0;
     let minAngle = Infinity;
     
-    episodes.forEach((_, i) => {
+    displayEpisodes.forEach((_, i) => {
       const cardAngle = (theta * i + totalRotation) % 360;
       // Normalize angle to -180 to 180 range
       const normalizedAngle = ((cardAngle + 180) % 360) - 180;
@@ -80,12 +134,14 @@ export default function Carousel({ episodes }: CarouselProps) {
     if (episodeInfo) {
       episodeInfo.classList.add('visible');
     }
-  }, [selectedIndex, cellCount, scrollRotation, liftY, tiltDeg, radius, episodes]);
+  }, [selectedIndex, cellCount, scrollRotation, liftY, tiltDeg, radius, displayEpisodes]);
 
   // Position each cell around the ring
   const layoutRing = useCallback(() => {
+    if (cellCount === 0) return;
+
     const theta = 360 / cellCount;
-    episodes.forEach((_, i) => {
+    displayEpisodes.forEach((_, i) => {
       const angle = theta * i;
       const cellContainer = document.querySelector(`[data-cell="${i}"]`)?.parentElement as HTMLElement;
       const cell = document.querySelector(`[data-cell="${i}"]`) as HTMLElement;
@@ -96,7 +152,7 @@ export default function Carousel({ episodes }: CarouselProps) {
       }
     });
     updateRotation();
-  }, [cellCount, radius, updateRotation, episodes]);
+  }, [cellCount, radius, updateRotation, displayEpisodes]);
 
   const goToPrevious = () => {
     setSelectedIndex(prev => prev - 1);
@@ -106,10 +162,23 @@ export default function Carousel({ episodes }: CarouselProps) {
     setSelectedIndex(prev => prev + 1);
   };
 
-  const handleCardClick = (episodeId: number) => {
-    // TODO: Add YouTube video URL mapping
-    console.log(`Card clicked for episode ${episodeId}`);
-    // Example: window.open(`https://youtube.com/watch?v=${videoId}`, '_blank');
+  const handleCardClick = (episodeId: string) => {
+    // Find the episode/video and open YouTube URL
+    const episode = displayEpisodes.find(ep => 
+      ep.id === episodeId
+    );
+    
+    if (!episode || episode.isPlaceholder) {
+      return;
+    }
+
+    if (episode.youtubeUrl) {
+      // YouTube video - open YouTube URL
+      window.open(episode.youtubeUrl, '_blank');
+    } else {
+      // Fallback for static episodes
+      console.log(`Card clicked for episode ${episodeId}`);
+    }
   };
 
   // Touch/Drag handlers
@@ -281,7 +350,7 @@ export default function Carousel({ episodes }: CarouselProps) {
           style={{ touchAction: 'pan-y', cursor: isDragging ? 'grabbing' : 'grab' }}
         >
           <div className="carousel">
-            {episodes.map((episode, index) => (
+            {displayEpisodes.map((episode, index) => (
               <div key={episode.id} className="cell-container">
                 <div
                   data-cell={index}
@@ -295,7 +364,20 @@ export default function Carousel({ episodes }: CarouselProps) {
                       handleCardClick(episode.id);
                     }
                   }}
-                />
+                >
+                  {episode.thumbnailUrl && (
+                    <Image
+                      src={episode.thumbnailUrl}
+                      alt={episode.title}
+                      fill
+                      sizes="(max-width: 480px) 260px, (max-width: 768px) 320px, (max-width: 1280px) 360px, 480px"
+                      quality={90}
+                      priority={index === 0}
+                      className="carousel__image"
+                      draggable={false}
+                    />
+                  )}
+                </div>
                 <div className={`cell-text ${isTextVisible ? 'visible' : ''}`}>
                   <h2 className="episode-title font-eb-garamond">{episode.title}</h2>
                 </div>

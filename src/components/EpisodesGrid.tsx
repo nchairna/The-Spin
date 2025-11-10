@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
+import { useYouTube } from '@/hooks/useYouTube';
 
 interface Episode {
   id: number;
@@ -14,12 +15,61 @@ interface Episode {
 }
 
 interface EpisodesGridProps {
-  episodes: Episode[];
+  episodes?: Episode[];
 }
 
 export default function EpisodesGrid({ episodes }: EpisodesGridProps) {
+  // Fetch YouTube data
+  const { data: youtubeData } = useYouTube({ maxResults: 20 });
+
+  type DisplayEpisode = {
+    id: string;
+    title: string;
+    thumbnailUrl?: string;
+    isPlaceholder?: boolean;
+  };
+
+  const MIN_EPISODES = 12;
+
+  const displayEpisodes: DisplayEpisode[] = (() => {
+    const youtubeEpisodes =
+      youtubeData?.videos?.map((video) => ({
+        id: video.id,
+        title: video.title,
+        thumbnailUrl: video.thumbnailUrl,
+      })) ?? [];
+
+    const providedEpisodes =
+      episodes?.map((episode) => ({
+        id: String(episode.id),
+        title: episode.title,
+        thumbnailUrl: episode.imageUrl,
+      })) ?? [];
+
+    const prioritizedEpisodes =
+      youtubeEpisodes.length > 0 ? youtubeEpisodes : providedEpisodes;
+
+    const placeholdersNeeded = Math.max(MIN_EPISODES - prioritizedEpisodes.length, 0);
+
+    const placeholders = Array.from({ length: placeholdersNeeded }, (_, index) => ({
+      id: `placeholder-${index}`,
+      title: 'Coming Soon',
+      isPlaceholder: true,
+    }));
+
+    const normalizedEpisodes = [...prioritizedEpisodes, ...placeholders];
+
+    return normalizedEpisodes.length > 0
+      ? normalizedEpisodes
+      : Array.from({ length: MIN_EPISODES }, (_, index) => ({
+          id: `fallback-placeholder-${index}`,
+          title: 'Coming Soon',
+          isPlaceholder: true,
+        }));
+  })();
+
   // Duplicate episodes to create seamless loop - more duplicates for endless scrolling
-  const duplicatedEpisodes = [...episodes, ...episodes, ...episodes, ...episodes, ...episodes, ...episodes, ...episodes, ...episodes];
+  const duplicatedEpisodes = Array.from({ length: 8 }, () => displayEpisodes).flat();
   
   // Refs for animation elements
   const leftContainerRef = useRef<HTMLDivElement>(null);
@@ -33,7 +83,7 @@ export default function EpisodesGrid({ episodes }: EpisodesGridProps) {
 
   // State for manual scroll positions
   const [leftScroll, setLeftScroll] = useState(0);
-  const [rightScroll, setRightScroll] = useState(-totalWidth / 2); // Start with cards visible on left
+  const [rightScroll, setRightScroll] = useState(0);
 
   // Smooth scroll-based animation
   useEffect(() => {
@@ -124,9 +174,9 @@ export default function EpisodesGrid({ episodes }: EpisodesGridProps) {
             >
               {/* Episode Thumbnail */}
               <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden">
-                {episode.imageUrl ? (
+                {episode.thumbnailUrl && !episode.isPlaceholder ? (
                   <Image
-                    src={episode.imageUrl}
+                    src={episode.thumbnailUrl}
                     alt={episode.title}
                     fill
                     className="object-cover group-hover:scale-105 transition-transform duration-300"
@@ -178,9 +228,9 @@ export default function EpisodesGrid({ episodes }: EpisodesGridProps) {
             >
               {/* Episode Thumbnail */}
               <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden">
-                {episode.imageUrl ? (
+                {episode.thumbnailUrl && !episode.isPlaceholder ? (
                   <Image
-                    src={episode.imageUrl}
+                    src={episode.thumbnailUrl}
                     alt={episode.title}
                     fill
                     className="object-cover group-hover:scale-105 transition-transform duration-300"

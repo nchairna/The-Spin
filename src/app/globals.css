@@ -304,10 +304,10 @@
 .carousel__cell {
   position: absolute;
   width: 380px;
-  height: 240px;
+  height: 213px;
   /* center the card inside the scene BEFORE ring transforms */
   left: calc(50% - 190px);
-  top: calc(50% - 120px);
+  top: calc(50% - 106.5px);
   background: hsl(0 0% 70%);
   box-shadow: 0 12px 28px rgba(0,0,0,.12);
   cursor: pointer;
@@ -320,6 +320,12 @@
   padding: 20px;
   text-align: center;
   border: 2px solid transparent;
+  overflow: hidden;
+}
+
+.carousel__image {
+  object-fit: cover;
+  pointer-events: none;
 }
 
 .carousel__cell:hover {
@@ -407,9 +413,9 @@
   
   .carousel__cell {
     width: 228px; /* 380px * 0.6 = 228px (40% smaller) */
-    height: 144px; /* 240px * 0.6 = 144px (40% smaller) */
+    height: 128px; /* Maintain 16:9 aspect ratio */
     left: calc(50% - 114px); /* 114px = 228px / 2 */
-    top: calc(50% - 72px); /* 72px = 144px / 2 */
+    top: calc(50% - 64px); /* 64px = 128px / 2 */
   }
   
   .carousel__cell::before {
@@ -569,16 +575,16 @@
 @media (max-width: 768px) {
   .cell-container {
     width: 340px;
-    height: 340px;
+    height: 320px;
     left: calc(50% - 170px);
-    top: calc(50% - 200px); /* Move carousel down for mobile */
+    top: calc(50% - 190px); /* Move carousel down for mobile */
   }
   
   .carousel__cell {
     width: 340px;
-    height: 200px;
+    height: 191px;
     left: calc(50% - 170px);
-    top: calc(50% - 100px);
+    top: calc(50% - 95.5px);
   }
   
   .cell-text {
@@ -614,16 +620,16 @@
 @media (max-width: 480px) {
   .cell-container {
     width: 300px;
-    height: 300px;
+    height: 280px;
     left: calc(50% - 150px);
-    top: calc(50% - 140px); /* Move carousel down more for small mobile */
+    top: calc(50% - 130px); /* Move carousel down more for small mobile */
   }
   
   .carousel__cell {
     width: 300px;
-    height: 180px;
+    height: 169px;
     left: calc(50% - 150px);
-    top: calc(50% - 90px);
+    top: calc(50% - 84.5px);
   }
   
   .cell-text {
@@ -763,9 +769,9 @@
   
   .carousel__cell {
     width: 280px;
-    height: 180px;
+    height: 158px;
     left: calc(50% - 140px);
-    top: calc(50% - 90px);
+    top: calc(50% - 79px);
   }
   
   .carousel {
@@ -807,9 +813,9 @@
   
   .carousel__cell {
     width: 200px;
-    height: 140px;
+    height: 113px;
     left: calc(50% - 100px);
-    top: calc(50% - 70px);
+    top: calc(50% - 56.5px);
   }
   
   .carousel {
@@ -879,9 +885,9 @@
   
   .carousel__cell {
     width: 160px;
-    height: 100px;
+    height: 90px;
     left: calc(50% - 80px);
-    top: calc(50% - 50px);
+    top: calc(50% - 45px);
   }
   
   .carousel {
@@ -944,9 +950,9 @@
   
   .carousel__cell {
     width: 480px;
-    height: 300px;
+    height: 270px;
     left: calc(50% - 240px);
-    top: calc(50% - 150px);
+    top: calc(50% - 135px);
     padding: 32px;
   }
   
