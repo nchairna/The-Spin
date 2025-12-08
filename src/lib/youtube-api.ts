@@ -247,6 +247,68 @@ async function getChannelUploadsPlaylist(apiKey: string, channelId: string): Pro
   return uploads;
 }
 
+// Fetch specific videos by their IDs
+export async function fetchVideosByIds(
+  apiKey: string,
+  videoIds: string[]
+): Promise<YouTubeVideo[]> {
+  if (videoIds.length === 0) {
+    return [];
+  }
+
+  // YouTube API allows up to 50 video IDs per request
+  const maxIdsPerRequest = 50;
+  const allVideos: YouTubeVideo[] = [];
+
+  // Process in batches if needed
+  for (let i = 0; i < videoIds.length; i += maxIdsPerRequest) {
+    const batchIds = videoIds.slice(i, i + maxIdsPerRequest);
+
+    const response = await fetch(
+      `${YOUTUBE_API_BASE}/videos?part=snippet,contentDetails,statistics&id=${batchIds.join(',')}&key=${apiKey}`
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error('YouTube API Error (fetchVideosByIds):', {
+        status: response.status,
+        statusText: response.statusText,
+        error: errorData
+      });
+      throw new Error(`YouTube API error: ${response.status} - ${errorData.error?.message || response.statusText}`);
+    }
+
+    const videoData: VideoItemsResponse = await response.json();
+
+    const videos = videoData.items.map((video) => {
+      const thumbnails = video.snippet.thumbnails || {};
+      const thumbnailUrl =
+        thumbnails.maxres?.url ||
+        thumbnails.standard?.url ||
+        thumbnails.high?.url ||
+        thumbnails.medium?.url ||
+        thumbnails.default?.url ||
+        '';
+
+      return {
+        id: video.id,
+        title: video.snippet.title,
+        description: video.snippet.description,
+        publishedAt: video.snippet.publishedAt,
+        duration: formatDuration(video.contentDetails.duration),
+        thumbnailUrl,
+        youtubeUrl: `https://www.youtube.com/watch?v=${video.id}`,
+        viewCount: formatViewCount(video.statistics.viewCount),
+        category: video.snippet.categoryId,
+      };
+    });
+
+    allVideos.push(...videos);
+  }
+
+  return allVideos;
+}
+
 // Main function to fetch YouTube data
 export async function fetchYouTubeData(config: {
   apiKey: string;
@@ -260,7 +322,7 @@ export async function fetchYouTubeData(config: {
       fetchVideos(config),
       fetchChannelInfo(config.apiKey, config.channelId)
     ]);
-    
+
     return {
       videos,
       channel,
