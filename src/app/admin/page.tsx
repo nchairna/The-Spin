@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
+import { toast } from 'react-hot-toast';
 import type { YouTubeVideo, YouTubeApiResponse } from '@/types/youtube';
 import type { CarouselSlot, ApiResponse } from '@/types/admin';
 
@@ -22,9 +23,6 @@ export default function AdminDashboard() {
 
   // State for search
   const [searchQuery, setSearchQuery] = useState('');
-
-  // State for messages
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   // Check if there are unsaved changes
   const hasChanges = useCallback(() => {
@@ -48,11 +46,11 @@ export default function AdminDashboard() {
         // Will be enriched with video data after videos are loaded
         setSlots(data.data.map((slot) => ({ ...slot })));
       } else {
-        setMessage({ type: 'error', text: data.error || 'Failed to load carousel slots' });
+        toast.error(data.error || 'Failed to load carousel slots');
       }
     } catch (error) {
       console.error('Error fetching slots:', error);
-      setMessage({ type: 'error', text: 'Failed to load carousel slots' });
+      toast.error('Failed to load carousel slots');
     } finally {
       setIsLoadingSlots(false);
     }
@@ -69,7 +67,7 @@ export default function AdminDashboard() {
       }
     } catch (error) {
       console.error('Error fetching videos:', error);
-      setMessage({ type: 'error', text: 'Failed to load YouTube videos' });
+      toast.error('Failed to load YouTube videos');
     } finally {
       setIsLoadingVideos(false);
     }
@@ -111,7 +109,6 @@ export default function AdminDashboard() {
           : slot
       )
     );
-    setMessage(null);
   };
 
   // Handle remove video from slot
@@ -124,7 +121,6 @@ export default function AdminDashboard() {
     if (isSaving) return;
 
     setIsSaving(true);
-    setMessage(null);
 
     try {
       const response = await fetch('/api/admin/carousel', {
@@ -143,15 +139,15 @@ export default function AdminDashboard() {
       const data: ApiResponse<CarouselSlot[]> = await response.json();
 
       if (data.success) {
-        setMessage({ type: 'success', text: 'Carousel updated successfully!' });
+        toast.success('Carousel updated successfully!');
         // Update original slots to match saved state
         setOriginalSlots(slots.map(({ position, youtubeId }) => ({ position, youtubeId })));
       } else {
-        setMessage({ type: 'error', text: data.error || 'Failed to save changes' });
+        toast.error(data.error || 'Failed to save changes');
       }
     } catch (error) {
       console.error('Error saving carousel:', error);
-      setMessage({ type: 'error', text: 'Failed to save changes' });
+      toast.error('Failed to save changes');
     } finally {
       setIsSaving(false);
     }
@@ -199,7 +195,7 @@ export default function AdminDashboard() {
   const isLoading = isLoadingSlots || isLoadingVideos;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 scroll-mt-24" id="dashboard">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -207,38 +203,6 @@ export default function AdminDashboard() {
           <p className="font-outfit text-gray-500 mt-1">Manage your carousel and episodes</p>
         </div>
       </div>
-
-      {/* Message Banner */}
-      {message && (
-        <div
-          className={`px-4 py-3 rounded-lg font-outfit text-sm flex items-center gap-2 ${
-            message.type === 'success'
-              ? 'bg-green-50 text-green-800 border border-green-200'
-              : 'bg-red-50 text-red-800 border border-red-200'
-          }`}
-        >
-          {message.type === 'success' ? (
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M5 13l4 4L19 7"
-              />
-            </svg>
-          ) : (
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-          )}
-          {message.text}
-        </div>
-      )}
 
       {/* Section 1: Carousel Episodes Management */}
       <section className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -342,12 +306,15 @@ export default function AdminDashboard() {
                     </div>
                   ) : (
                     <div className="p-3">
+                      <div className="relative aspect-video bg-gray-100 rounded border-2 border-dashed border-gray-200 flex items-center justify-center mb-2">
+                        <span className="font-outfit text-sm text-gray-400">Coming Soon</span>
+                      </div>
                       <select
                         value=""
                         onChange={(e) => handleSlotChange(slot.position, e.target.value || null)}
                         className="w-full px-3 py-2 text-sm font-outfit bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C72B1B]/20 focus:border-[#C72B1B]"
                       >
-                        <option value="">Coming Soon (empty)</option>
+                        <option value="">Select video...</option>
                         {getAvailableVideos(slot.position).map((video) => (
                           <option key={video.id} value={video.id}>
                             {video.title.length > 50
@@ -356,9 +323,6 @@ export default function AdminDashboard() {
                           </option>
                         ))}
                       </select>
-                      <div className="mt-3 flex items-center justify-center h-20 bg-gray-100 rounded border-2 border-dashed border-gray-200">
-                        <span className="font-outfit text-sm text-gray-400">Coming Soon</span>
-                      </div>
                     </div>
                   )}
                 </div>

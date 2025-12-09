@@ -3,11 +3,11 @@
 import { useState, useRef, useEffect, useCallback, KeyboardEvent, ClipboardEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { toast } from 'react-hot-toast';
 
 export default function LoginPage() {
   const router = useRouter();
   const [pin, setPin] = useState<string[]>(['', '', '', '']);
-  const [error, setError] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const [shake, setShake] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
@@ -32,7 +32,7 @@ export default function LoginPage() {
     if (isLoadingRef.current) return;
 
     setIsLoading(true);
-    setError('');
+    const toastId = toast.loading('Verifying...');
 
     try {
       const response = await fetch('/api/auth/login', {
@@ -46,14 +46,15 @@ export default function LoginPage() {
       const data = await response.json();
 
       if (response.ok) {
+        toast.dismiss(toastId);
         router.push('/admin');
       } else {
-        setError(data.error || 'Invalid PIN');
+        toast.error(data.error || 'Invalid PIN', { id: toastId });
         triggerShake();
         clearPin();
       }
     } catch {
-      setError('Something went wrong. Please try again.');
+      toast.error('Something went wrong. Please try again.', { id: toastId });
       triggerShake();
       clearPin();
     } finally {
@@ -81,7 +82,6 @@ export default function LoginPage() {
     const newPin = [...pin];
     newPin[index] = value;
     setPin(newPin);
-    setError('');
 
     // Auto-focus next input
     if (value && index < 3) {
@@ -177,53 +177,19 @@ export default function LoginPage() {
               text-center text-2xl md:text-3xl font-outfit font-medium
               border-2 rounded-lg
               outline-none transition-all duration-200
-              ${error
+              ${shake
                 ? 'border-red-400 bg-red-50'
                 : digit
                   ? 'border-gray-400 bg-gray-50'
                   : 'border-gray-200 bg-white'
               }
-              ${!isLoading && !error && 'focus:border-primary-red focus:ring-2 focus:ring-primary-red/20'}
+              ${!isLoading && !shake && 'focus:border-primary-red focus:ring-2 focus:ring-primary-red/20'}
               ${isLoading ? 'opacity-60 cursor-not-allowed' : ''}
             `}
             aria-label={`PIN digit ${index + 1}`}
           />
         ))}
       </div>
-
-      {/* Error Message */}
-      {error && (
-        <p className="font-outfit text-red-500 text-sm mb-4 animate-fadeIn">
-          {error}
-        </p>
-      )}
-
-      {/* Loading State */}
-      {isLoading && (
-        <div className="flex items-center gap-2 text-gray-500 font-outfit">
-          <svg
-            className="animate-spin h-5 w-5"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-          >
-            <circle
-              className="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              strokeWidth="4"
-            />
-            <path
-              className="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-            />
-          </svg>
-          <span>Verifying...</span>
-        </div>
-      )}
 
       {/* Help Text */}
       <p className="font-outfit text-gray-400 text-xs mt-8 text-center">

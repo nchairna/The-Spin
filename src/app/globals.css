@@ -49,6 +49,10 @@
   --color-primary-red-hover: var(--primary-red-hover);
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 /* Navbar Animations */
 @keyframes fadeInDown {
   from {
