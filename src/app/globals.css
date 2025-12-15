@@ -49,6 +49,10 @@
   --color-primary-red-hover: var(--primary-red-hover);
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 /* Navbar Animations */
 @keyframes fadeInDown {
   from {
@@ -1065,4 +1069,31 @@
 
 .animate-counter-tornado {
   animation: counter-tornado 15s ease-in-out infinite;
+}
+
+/* Shake animation for PIN error */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+  20%, 40%, 60%, 80% { transform: translateX(4px); }
+}
+
+.animate-shake {
+  animation: shake 0.5s ease-in-out;
+}
+
+/* Fade in animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out;
 }

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import localFont from 'next/font/local';
 import { Outfit, Poppins } from 'next/font/google';
+import { Toaster } from 'react-hot-toast';
 import "./globals.css";
 
 const ebGaramond = localFont({
@@ -55,6 +56,7 @@ export default function RootLayout({
     <html lang="en" className={`${ebGaramond.variable} ${ebGaramondAlt.variable} ${ebGaramondItalic.variable} ${paradoese.variable} ${outfit.variable} ${poppins.variable}`}>
       <body className={`font-eb-garamond ${ebGaramond.variable} ${ebGaramondAlt.variable} ${ebGaramondItalic.variable} ${paradoese.variable} ${outfit.variable} ${poppins.variable}`}>
         {children}
+        <Toaster position="top-right" />
       </body>
     </html>
   );

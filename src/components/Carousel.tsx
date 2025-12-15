@@ -2,17 +2,13 @@
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import Image from 'next/image';
-import { useYouTube } from '@/hooks/useYouTube';
+import { useCarousel } from '@/hooks/useCarousel';
 
-interface CarouselProps {
-  episodes?: Array<{
-    id: number;
-    title: string;
-    description?: string;
-  }>;
-}
+// Legacy prop interface kept for backwards compatibility
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+interface CarouselProps {}
 
-export default function Carousel({ episodes }: CarouselProps) {
+export default function Carousel({}: CarouselProps) {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
@@ -21,11 +17,11 @@ export default function Carousel({ episodes }: CarouselProps) {
   const [isTextVisible, setIsTextVisible] = useState(false);
   const [scrollRotation, setScrollRotation] = useState(0);
   const carouselRef = useRef<HTMLDivElement>(null);
-  
-  // Fetch YouTube data
-  const { data: youtubeData } = useYouTube({ maxResults: 9 });
-  
-  // Use YouTube videos if available, fallback to episodes prop
+
+  // Fetch carousel data (from database with YouTube fallback)
+  const { data: carouselData } = useCarousel();
+
+  // Define display episode type
   type DisplayEpisode = {
     id: string;
     title: string;
@@ -38,40 +34,64 @@ export default function Carousel({ episodes }: CarouselProps) {
   const MAX_CARDS = 9;
 
   const displayEpisodes = useMemo<DisplayEpisode[]>(() => {
-    const youtubeEpisodes =
-      youtubeData?.videos
-        ?.slice(0, MAX_CARDS)
-        .map((video) => ({
-          id: video.id,
-          title: video.title,
-          description: video.description,
-          thumbnailUrl: video.thumbnailUrl,
-          youtubeUrl: video.youtubeUrl,
-        })) ?? [];
+    if (!carouselData) {
+      // Loading state - show placeholders
+      return Array.from({ length: MAX_CARDS }, (_, i) => ({
+        id: `placeholder-${i}`,
+        title: 'Coming Soon',
+        description: 'Stay tuned for upcoming episodes.',
+        isPlaceholder: true,
+      }));
+    }
 
-    const providedEpisodes =
-      (episodes ?? [])
-        .slice(0, MAX_CARDS)
-        .map((episode) => ({
-          id: String(episode.id),
-          title: episode.title,
-          description: episode.description,
-        })) ?? [];
+    if (carouselData.isFromDatabase) {
+      // Database mode - use slots configuration
+      return carouselData.slots.map((slot, index) => {
+        const video = slot.youtubeId ? carouselData.videos.get(slot.youtubeId) : null;
 
-    const prioritizedEpisodes =
-      youtubeEpisodes.length > 0 ? youtubeEpisodes : providedEpisodes;
+        if (video) {
+          return {
+            id: video.id,
+            title: video.title,
+            description: video.description,
+            thumbnailUrl: video.thumbnailUrl,
+            youtubeUrl: video.youtubeUrl,
+            isPlaceholder: false,
+          };
+        }
 
-    const placeholdersNeeded = Math.max(MAX_CARDS - prioritizedEpisodes.length, 0);
+        return {
+          id: `placeholder-${index}`,
+          title: 'Coming Soon',
+          description: 'Stay tuned for upcoming episodes.',
+          isPlaceholder: true,
+        };
+      });
+    } else {
+      // Fallback mode - use YouTube videos directly
+      const videos = Array.from(carouselData.videos.values()).slice(0, MAX_CARDS);
+      const episodesFromVideos: DisplayEpisode[] = videos.map((video) => ({
+        id: video.id,
+        title: video.title,
+        description: video.description,
+        thumbnailUrl: video.thumbnailUrl,
+        youtubeUrl: video.youtubeUrl,
+        isPlaceholder: false,
+      }));
 
-    const placeholders = Array.from({ length: placeholdersNeeded }, (_, index) => ({
-      id: `placeholder-${index}`,
-      title: 'Coming Soon',
-      description: 'Stay tuned for upcoming episodes.',
-      isPlaceholder: true,
-    }));
+      // Fill remaining with placeholders
+      while (episodesFromVideos.length < MAX_CARDS) {
+        episodesFromVideos.push({
+          id: `placeholder-${episodesFromVideos.length}`,
+          title: 'Coming Soon',
+          description: 'Stay tuned for upcoming episodes.',
+          isPlaceholder: true,
+        });
+      }
 
-    return [...prioritizedEpisodes, ...placeholders];
-  }, [youtubeData?.videos, episodes]);
+      return episodesFromVideos;
+    }
+  }, [carouselData]);
 
   const cellCount = displayEpisodes.length;
 
