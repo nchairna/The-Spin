@@ -103,7 +103,7 @@ export default function EpisodesGrid({ episodes }: EpisodesGridProps) {
         
         setRightScroll(prev => {
           const newScroll = prev + speed;
-          // Reset position when we've scrolled past one full cycle
+          // Reset position when we've scrolled past one full cycle..
           return newScroll >= 0 ? newScroll - totalWidth : newScroll;
         });
         
